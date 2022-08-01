@@ -1,0 +1,27 @@
+{
+  "name": "Продвижение Резюме HH.ru",
+  "description": "Продвигаем резюме на сайте HH.ru",
+  "version": "0.0.3",
+  "author": "Oleg",
+  "manifest_version": 3,
+
+  "action": {
+    "default_title": "Продвигаем резюме на сайте HH.ru",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "img/icon.png",
+      "128": "img/icon.png"
+    }
+  },
+
+  "icons": {
+    "16": "img/icon.png",
+    "128": "img/icon.png"
+  },
+  "permissions": [
+    "https://nn.hh.ru/applicant/resumes/*",
+    "activeTab", 
+    "scripting",
+    "storage"
+  ]
+}
