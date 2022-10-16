@@ -23,9 +23,11 @@
     "tabs",
     "activeTab", 
     "scripting",
-    "storage"
+    "storage",
+    "http://nn.hh.ru/applicant/resumes*",
+    "https://nn.hh.ru/applicant/resumes*"
   ],
-  "host_permissions":["https://nn.hh.ru/applicant/resumes*"],
+  "host_permissions":["*://nn.hh.ru/applicant/resumes*"],
 
   "background":{
     "service_worker":"bg.js"
