@@ -1,30 +1,39 @@
-﻿/* chrome.tabs.onUpdated.addListener(
-  // recolorResumeName('!!!  DONE  !!!')
-  (id, status, tabInfo)=>{
-    // console.dir();
-    if(status.status == 'complete'){
-      console.dir(tabInfo);
+﻿
+
+/*
+! SWLS - ServiceWorker LocalStorage
+*/
+
+
+
+{
+  /* chrome.tabs.onUpdated.addListener(
+    // recolorResumeName('!!!  DONE  !!!')
+    (id, status, tabInfo)=>{
+      // console.dir();
+      if(status.status == 'complete'){
+        console.dir(tabInfo);
+      }
+    }
+  )
+
+
+
+
+
+  let hhTab = chrome.tabs.query({ 
+    url: "*://nn.hh.ru/applicant/resumes*" 
+  });
+  function hhTabIsCompleted(hhTab) {
+    for (const tab of hhTab) {
+      console.log(tab);
     }
   }
-)
-
-
-
-
-
-let hhTab = chrome.tabs.query({ 
-  url: "*://nn.hh.ru/applicant/resumes*" 
-});
-function hhTabIsCompleted(hhTab) {
-  for (const tab of hhTab) {
-    console.log(tab);
+  function logError(error) {
+    console.error(`Error: ${error}`);
   }
+  hhTab.then(hhTabIsCompleted, logError) */
 }
-function logError(error) {
-  console.error(`Error: ${error}`);
-}
-hhTab.then(hhTabIsCompleted, logError) */
-
 
 
 function recolorResumeName(resumeName){
@@ -64,52 +73,48 @@ function tabReload(){
 
 
 
-function startSmallInterval(){
+function startSmallInterval(){ // функция малого интервала; проверяет имя, страницу и её статус
 
-  let encapsulater = setInterval(async () =>{ // малый интервал на 5 сек
+  let validator = setInterval(async () =>{ // малый интервал на 5 сек
+    
     await chrome.storage.local.get(console.log); // отобразить local storage из ServiceWorker
-    
-    await chrome.storage.local.get(
-      ['resumeName'], 
-      ({resumeName})=>{
-        if(!resumeName) { // если в local storage НЕТ resumeName, то ничего не делай
-          console.log('ИМЯ РЕЗЮМЕ НЕ УСТАНОВЛЕНО');
-          return;
-        };
-        console.log('ИМЯ РЕЗЮМЕ УКАЗАНО');
-        hhTabIsOpened(); // иначе выполни проверку страницы
-      }
-    )
-    
-    function hhTabIsOpened() { // функция проверки присутствия страницы среди вкладок
-      let hhTab = chrome.tabs.query({ 
+    let name; // внутр. переменная для сохранения имени резюме
+    let resumeName = chrome.storage.local.get(['resumeName']); //вытаскиваем из SWLS название резюме
+    resumeName.then(
+      // result => [result.resumeName ? hhTabIsOpened() : null], //если название есть, выполни проверку страницы
+      result =>{
+        name = result.resumeName;
+        if (!result.resumeName){ // если в SWLS названия резюме нет, то
+          console.log('ИМЯ РЕЗЮМЕ НЕ УСТАНОВЛЕНО'); return;} // ничего не делай
+          console.log('ИМЯ РЕЗЮМЕ УКАЗАНО'); hhTabIsOpened(); // иначе выполни проверку страницы
+      },
+      error => logError(error)
+    );
+
+    function hhTabIsOpened() { // функция проверки присутствия страницы среди вкладок браузера
+      let hhTab = chrome.tabs.query({ //ищем страницу резюме среди вкладок браузера 
         url: "*://nn.hh.ru/applicant/resumes*" 
       });
-      hhTab.then(hhTabIsCompleted, logError);
+      hhTab.then(
+        // если есть result запусти проверку полной загрузки страницы
+        result => {console.log('СТРАНИЦА ОТКРЫТА'); hhTabIsCompleted(result[0])},
+        error => logError(error)
+      );
     } 
     
-    async function hhTabIsCompleted(hhTab) { // функция проверки оконченной загрузки страницы
-      console.log('СТРАНИЦА ОТКРЫТА');
-      for (const tab of hhTab) {
-        // console.log('привет из hhTabIsOpened, страница открыта');
-        // console.dir(tab);
-        if(tab.status != 'complete'){
+    async function hhTabIsCompleted(hhTab) { // функция проверки полной загрузки страницы
+        if(hhTab.status != 'complete'){
           console.log('СТРАНИЦА ВСЕ ЕЩЁ ГРУЗИТСЯ');
-          // console.dir(tab);
           return;
         }
+        // console.log('name: ' + name);
         console.log('СТРАНИЦА ЗАГРУЖЕНА');
-        // console.dir(tab);
-        clearInterval(encapsulater); // останавливаем setInterval encapsulater
-        console.log('ENCAPSULATER ОСТАНОВЛЕН');
-        await chrome.storage.local.get(
-          ['resumeName'],
-          ({resumeName})=>{ scriptExecuter(resumeName); } // запуск функции инкапсуляции
-        );
+        clearInterval(validator); // останавливаем малый интервал validator
+        console.log('validator ОСТАНОВЛЕН');
+        scriptExecuter(name); // запуск функции инкапсуляции
         // chrome.storage.local.clear(); // очищаем ServiceWorker LocalStorage, удаляем имя резюме
         // console.log('УДАЛИЛИ ИМЯ РЕЗЮМЕ');
         startBigInterval(); // запуск большого интервала
-      }
     }
   
   },5000);
@@ -120,13 +125,13 @@ function startSmallInterval(){
 async function scriptExecuter(resumeName){ // функция инкапсуляции кода на страницу
   // (!resumeName) ? 
   //   (resumeName = null) : 
-  //   (clearInterval(encapsulater), scriptIsEncapsulated = !scriptIsEncapsulated);
+  //   (clearInterval(validator), scriptIsEncapsulated = !scriptIsEncapsulated);
   
   // if(!resumeName) { return }; // если в local storage НЕТ resumeName, то ничего не делай
-  // clearInterval(encapsulater); // останавливаем setInterval encapsulater
-  // console.log('ОСТАНАВИЛИ ENCAPSULATER');
+  // clearInterval(validator); // останавливаем setInterval validator
+  // console.log('ОСТАНАВИЛИ validator');
   // scriptIsEncapsulated = !scriptIsEncapsulated;
-  // clearInterval(encapsulater);
+  // clearInterval(validator);
   // console.log('ПРЕЗАГРУЗКА');
   // console.log(this); // ServiceWorkerGlobalScope
   let tabs = await chrome.tabs.query({}); // массив из ВСЕХ вкладок браузера
@@ -148,8 +153,8 @@ async function scriptExecuter(resumeName){ // функция инкапсуля�
 
 
 function startBigInterval(){
-  console.log('ПРИВЕТ ИЗ START_BIG_INTERVAL');
-  let bigInterval = setInterval(() =>{
+  console.log('START_BIG_INTERVAL запущен');
+  let bigInterval = setInterval(() =>{ // большой интервал на 60 секунд
     
     let hhTab = chrome.tabs.query({ 
       url: "*://nn.hh.ru/applicant/resumes*" 
