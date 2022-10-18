@@ -79,9 +79,9 @@ function startSmallInterval(){ // функция малого интервала
     
     await chrome.storage.local.get(console.log); // отобразить local storage из ServiceWorker
     let name; // внутр. переменная для сохранения имени резюме
+    
     let resumeName = chrome.storage.local.get(['resumeName']); //вытаскиваем из SWLS название резюме
     resumeName.then(
-      // result => [result.resumeName ? hhTabIsOpened() : null], //если название есть, выполни проверку страницы
       result =>{
         name = result.resumeName;
         if (!result.resumeName){ // если в SWLS названия резюме нет, то
@@ -102,7 +102,7 @@ function startSmallInterval(){ // функция малого интервала
       );
     } 
     
-    async function hhTabIsCompleted(hhTab) { // функция проверки полной загрузки страницы
+    function hhTabIsCompleted(hhTab) { // функция проверки полной загрузки страницы
         if(hhTab.status != 'complete'){
           console.log('СТРАНИЦА ВСЕ ЕЩЁ ГРУЗИТСЯ');
           return;
@@ -123,31 +123,36 @@ function startSmallInterval(){ // функция малого интервала
 
 
 async function scriptExecuter(resumeName){ // функция инкапсуляции кода на страницу
-  // (!resumeName) ? 
-  //   (resumeName = null) : 
-  //   (clearInterval(validator), scriptIsEncapsulated = !scriptIsEncapsulated);
+
+  // let tabs = await chrome.tabs.query({}); // массив из ВСЕХ вкладок браузера
+  // for (let tab of tabs) { // пробегаемся по названиям всех вкладок
+  //   if (tab.url.includes("https://nn.hh.ru/applicant/resumes")){ // находим данную вкладку
+  //     chrome.scripting.executeScript({// и инкапсулируем в страницу код recolorResumeName
+  //       target: { tabId: tab.id },
+  //       function: recolorResumeName,
+  //       args:[resumeName]
+  //     });
+  //     // scriptIsEncapsulated = !scriptIsEncapsulated; // тумблер вкл/выкл инкапсуляцию кода
+  //   }
+  // };
+  // // chrome.storage.local.clear(); // очищаем ServiceWorker LocalStorage
+  // // console.log('ОЧИCТИЛИ SERVICEWORKER LOCALSTORAGE');
+  // // await chrome.storage.local.get(console.log);
   
-  // if(!resumeName) { return }; // если в local storage НЕТ resumeName, то ничего не делай
-  // clearInterval(validator); // останавливаем setInterval validator
-  // console.log('ОСТАНАВИЛИ validator');
-  // scriptIsEncapsulated = !scriptIsEncapsulated;
-  // clearInterval(validator);
-  // console.log('ПРЕЗАГРУЗКА');
-  // console.log(this); // ServiceWorkerGlobalScope
-  let tabs = await chrome.tabs.query({}); // массив из ВСЕХ вкладок браузера
-  for (let tab of tabs) { // пробегаемся по названиям всех вкладок
-    if (tab.url.includes("https://nn.hh.ru/applicant/resumes")){ // находим данную вкладку
+  let hhTab = chrome.tabs.query({ //ищем страницу резюме среди вкладок браузера 
+    url: "*://nn.hh.ru/applicant/resumes*" 
+  });
+  hhTab.then(
+    result => {
+      // alert(result)
       chrome.scripting.executeScript({// и инкапсулируем в страницу код recolorResumeName
-        target: { tabId: tab.id },
+        target: { tabId: result[0].id },
         function: recolorResumeName,
         args:[resumeName]
       });
-      // scriptIsEncapsulated = !scriptIsEncapsulated; // тумблер вкл/выкл инкапсуляцию кода
-    }
-  };
-  // chrome.storage.local.clear(); // очищаем ServiceWorker LocalStorage
-  // console.log('ОЧИCТИЛИ SERVICEWORKER LOCALSTORAGE');
-  // await chrome.storage.local.get(console.log);
+    },
+    error => alert(error)
+  )
 };
 
 
