@@ -1,0 +1,33 @@
+{
+  "name": "autoupdate_hh_ver2",
+  "version": "0.0.1",
+  "description": "chrome-расширения для автопродвижения резюме",
+  "main": "bg.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "eslint":"eslint",
+    "prettier":"prettier"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jade-Dragon88/hhResumeAutoupdate.git"
+  },
+  "author": "Oleg",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Jade-Dragon88/hhResumeAutoupdate/issues"
+  },
+  "homepage": "https://github.com/Jade-Dragon88/hhResumeAutoupdate#readme",
+  "devDependencies": {
+    "@babel/eslint-parser": "^7.19.1",
+    "eslint": "^8.26.0",
+    "eslint-config-airbnb": "^19.0.4",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-prettier": "^0.0.0-empty",
+    "prettier": "^2.7.1"
+  }
+}
