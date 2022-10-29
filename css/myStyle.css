@@ -1,0 +1,8 @@
+.main {
+  width: 500px;
+}
+.form-control:focus,
+.btn-success:focus,
+.btn-warning:focus {
+  box-shadow: none !important;
+}
