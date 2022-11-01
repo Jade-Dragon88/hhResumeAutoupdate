@@ -132,34 +132,71 @@ function startSmallInterval() {
       }
       // console.log('name: ' + name);
       clearInterval(validator); // останавливаем малый интервал validator
-      executingScript(hhTab, recolorResumeName, name); // запуск функции инкапсуляции
-      startBigInterval(); // запуск большого интервала
-
+      executingScript(hhTab, recolorResumeName, name); // запускаем инкапсуляцию ф-ции смены цветов
       console.log(`СТРАНИЦА ЗАГРУЖЕНА
-validator ОСТАНОВЛЕН
-START_BIG_INTERVAL запущен`);
+validator ОСТАНОВЛЕН`);
+      bigTimerMng('start'); // запуск большого интервала
       // chrome.storage.local.clear(); // очищаем ServiceWorker LocalStorage, удаляем имя резюме
       // console.log('УДАЛИЛИ ИМЯ РЕЗЮМЕ');
     }
   }, 5000);
 }
-
-function startBigInterval() {
-  // console.log('');
-  let bigInterval = setTimeout(() => {
+let bigTimerID;
+function bigTimerMng(command) {
+  // let bigTimer;
+  let bigTimer = function () {
+    // console.log(`START_BIG_INTERVAL запущен`);
     // большой интервал на 60 секунд
     let hhTab = getTab('*://nn.hh.ru/applicant/resumes*'); // снова проверяем присутствие страницы
     hhTab.then(
+      // если она есть, инкапсулируем ф-цию перезагрузки страницы
       (result) => executingScript(result, tabReload),
       (error) => logError(error)
     );
-    clearTimeout(bigInterval);
+    clearTimeout(bigTimer);
+    startSmallInterval();
+    //   console.log(`КОМАНДА НА ПЕРЕЗАГРУЗКУ ОТПРАВЛЕНА
+    // BIG_INTERVAL ОСТАНОВЛЕН
+    // START_SMALL_INTERVAL ЗАПУЩЕН
+    // ********************************************************`);
+    console.log('Конец bigTimer');
+  };
+  // command == 'start' ? setTimeout(bigTimer, 60000) : null;
+  // command == 'stop' ? clearTimeout(bigTimer) : null;
+
+  if (command == 'start') {
+    bigTimerID = setTimeout(bigTimer, 60000);
+    console.log(`START_BIG_INTERVAL запущен`);
+    // console.dir(bigTimer);
+  }
+  // console.log(`bigTimer = ${bigTimer}`);
+  if (command == 'stop') {
+    clearTimeout(bigTimerID);
     startSmallInterval();
     console.log(`КОМАНДА НА ПЕРЕЗАГРУЗКУ ОТПРАВЛЕНА
-BIG_INTERVAL ОСТАНОВЛЕН
-START_SMALL_INTERVAL ЗАПУЩЕН
-********************************************************`);
-  }, /*4 * 60 * 60000 + */ 60000);
+    BIG_INTERVAL ОСТАНОВЛЕН
+    START_SMALL_INTERVAL ЗАПУЩЕН
+    ********************************************************`);
+    // console.log(`stop bigTimer = ${bigTimer}`);
+  }
 }
 
-// startSmallInterval(); // запускаем весь скрипт
+chrome.runtime.onMessage.addListener((req, sender, response) => {
+  if (req.message) response({ status: 'ok', message: req.message });
+  // console.dir(this);
+  if (req.message == 'STOP') {
+    let hhTab = getTab('*://nn.hh.ru/applicant/resumes*'); // снова проверяем присутствие страницы
+    hhTab.then(
+      // если она есть, инкапсулируем ф-цию перезагрузки страницы
+      (result) => executingScript(result, tabReload),
+      (error) => logError(error)
+    );
+    bigTimerMng('stop');
+    console.log(`КОМАНДА НА ПЕРЕЗАГРУЗКУ ОТПРАВЛЕНА
+BIG_INTERVAL ОСТАНОВЛЕН`);
+  }
+  // console.log('req:');
+  // console.dir(req);
+});
+
+startSmallInterval(); // запускаем весь скрипт

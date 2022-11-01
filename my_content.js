@@ -3,8 +3,18 @@ const input = document.querySelector('#resumeName'); // поле для ввод
 const btnStartStop = document.querySelector('#btnStartStop'); // кнопка для запуска/остановки скрипта
 
 function changeBtn(btnText) {
+  chrome.runtime.sendMessage({ message: btnText }, (ret) => {
+    if (!ret) {
+      console.log('Error send message ' + chrome.runtime.lastError);
+      return;
+    }
+    if (ret.status == 'ok')
+      console.log(`bg.js принял сообщение ${ret.message}`);
+  });
   if (btnText == 'START') {
     chrome.storage.local.set({ resumeName: resumeName }); // записываем в localStorage название резюме
+    // window.chrome.resumeName = resumeName;
+    // console.dir(this);
     btnStartStop.innerText = 'STOP';
   }
   if (btnText == 'STOP') {
@@ -12,9 +22,9 @@ function changeBtn(btnText) {
     [resumeName, input.value] = [null, null]; // обнуляем resumeName и значение input
     btnStartStop.innerText = 'START';
   }
-  chrome.storage.local.get(console.log);
-  // console.dir(chrome.storage);
-  console.dir(input);
+  // chrome.storage.local.get(console.log);
+  // // console.dir(chrome.storage);
+  // console.dir(input);
   btnStartStop.classList.toggle('btn-success');
   btnStartStop.classList.toggle('btn-warning');
 }
@@ -26,6 +36,6 @@ input.addEventListener('change', (e) => {
 
 btnStartStop.addEventListener('click', (e) => {
   e.preventDefault();
-  let btnText = btnStartStop.innerText;
+  let btnText = btnStartStop.innerText; // значение кнопки запуска/остановки скрипта
   e.target == btnStartStop ? changeBtn(btnText) : null;
 });
